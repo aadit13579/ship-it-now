@@ -1,5 +1,6 @@
-const BASE_URL = "http://localhost:3000/shipments";
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const BASE_URL = `${API_URL}/shipments`;
+
 async function handle(res) {
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
@@ -14,17 +15,14 @@ async function handle(res) {
   return res.status === 204 ? null : res.json();
 }
 
-export const fetchShipments = async () => {
-  const response = await fetch(`${API_URL}/shipments`);
-  return response.json();
-};
-
 export async function fetchShipments({ search = "", status = "" } = {}) {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
   if (status) params.set("status", status);
+  
   const qs = params.toString();
   const res = await fetch(qs ? `${BASE_URL}?${qs}` : BASE_URL);
+  
   return handle(res);
 }
 

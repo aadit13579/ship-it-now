@@ -19,9 +19,9 @@ export default function CreateShipmentPanel({ open, onClose, onSubmit, submittin
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const payload = { ...form };
+    const payload: any = { ...form };
     if (!payload.reference_number.trim()) delete payload.reference_number;
-    if (payload.weight) payload.weight = parseFloat(payload.weight);
+    if (payload.weight) payload.weight = parseFloat(payload.weight as string);
     const ok = await onSubmit(payload);
     if (ok) setForm(EMPTY);
   }
