@@ -1,114 +1,91 @@
-# ShipItNow — Real-Time Shipment Status Tracker
+# ShipItNow — Shipment Status Tracker
 
-A full-stack, modular logistics tracking dashboard designed to monitor shipment lifecycle events, manage state transitions, and maintain an immutable audit trail. Built with a decoupled Fastify + PostgreSQL backend and a Vite + React + Tailwind CSS frontend.
+A shipment tracking dashboard: create shipments, move them through a status pipeline, search and filter the list, and see the full history behind every status change.
 
----
+**Live app:** https://frontend-32viupzuv-aadit13579s-projects.vercel.app/
 
-## Tech Stack
-
-| Layer | Technology | Key Choice Rationale |
-| :--- | :--- | :--- |
-| **Backend Framework** | Node.js / Fastify / TypeScript | Low overhead, high-throughput asynchronous HTTP routing, built-in JSON schema validation. |
-| **Database** | PostgreSQL | Native ENUM support, ACID compliance for audit trails, sequences for formatted tracking numbers. |
-| **Frontend** | React / Vite / TypeScript | Fast Hot Module Replacement (HMR), lightweight static bundle deployment, clean SPA separation. |
-| **Styling** | Tailwind CSS v4 | Utility-first CSS, fast layout composition, zero-runtime overhead. |
-| **Infrastructure** | Docker, Railway / Render, Vercel | Containerized local parity, containerized backend hosting, static CDN edge hosting. |
+**Stack:** Fastify + PostgreSQL (backend, hosted on Railway) · React + Vite + Tailwind (frontend, hosted on Vercel)
 
 ---
 
-## Backend Architecture & Database Design
+## Why these tools
 
-### 1. Database Schema & ACID Audit Logs
-The database consists of two core tables linked by foreign key constraints:
-* **`shipments`**: Stores shipment metadata, current status (`shipment_status` ENUM), priority (`shipment_priority` ENUM), origins/destinations (`TEXT`), and expected delivery dates.
-* **`shipment_events`**: Acts as an immutable append-only event log capturing every state change (`Booked`, `In Transit`, `Customs Hold`, `Delivered`, `Cancelled`) alongside optional notes and timestamps.
+**Vite + React instead of Next.js.**Next.js is built to run its own full-stack server, but since we already have a Fastify backend, using it would just add an unnecessary middleman. React with Vite gives us a lightweight, lightning-fast frontend that talks directly to our API without any extra server bloat or performance lag, communicating directly with our Fastify backend without any framework bloat or performance bottlenecks.
 
-Whenever a shipment's status is updated, the operation executes inside an **ACID transaction** (`BEGIN`, `UPDATE shipments`, `INSERT INTO shipment_events`, `COMMIT`). If either step fails, the transaction issues an immediate `ROLLBACK`, guaranteeing zero data inconsistency between the shipment's current state and its audit log.
+**Fastify + TypeScript for the backend.** Fastify validates every request against a JSON schema before it reaches the route handler, so bad input is rejected early without extra middleware. It's also fast under the kind of traffic this API mostly sees frequent, small reads. TypeScript catches shape mismatches between what the frontend sends and what the backend expects at build time rather than in production.
 
-### 2. Auto-Generated Tracking Numbers (`SHIP-00001`)
-* **Current Implementation:** Sequence auto-generation via PostgreSQL `shipment_ref_seq`. When a payload omits `reference_number`, the server pulls `nextval('shipment_ref_seq')` and formats it with zero-padding as `SHIP-00001`.
-* **Scalability Path:** For production environments handling 100,000+ concurrent writes, sequential database sequences can introduce lock contention. To scale horizontally, this sequence fallback can be replaced with non-sequential distributed ID generators (such as 8-character cryptographic random hashes or prefixed ULIDs like `SHIP-8X92K4`). This eliminates sequence contention and prevents order enumeration attacks.
+**PostgreSQL for the database.** The data is genuinely relational: every shipment has a growing list of status-change events tied to it, and the two need to stay in sync. Postgres also gave us a couple of things for free, a `SEQUENCE` for generating clean, collision-free reference numbers, and `ILIKE` for simple search — without needing extra infrastructure.
 
-### 3. SOLID Principles & Fastify Plugin Architecture
-* **Single Responsibility Principle (SRP):** Route declarations (`src/routes/shipments.ts`), validation schemas (`src/schemas.ts`), and database connection pooling (`src/db.ts`) are decoupled into isolated modules.
-* **Security & Injection Defense:** SQL queries utilize strict parameterization (`$1`, `$2`), passing SQL structure and data payloads separately to the PostgreSQL extended query protocol. This renders SQL injection attempts inert regardless of input contents. Fastify JSON schemas validate incoming data types before request execution.
+**Railway + Vercel for hosting.** The backend and database sit together on Railway so queries stay on a fast internal network instead of crossing the public internet. The frontend is a static build with no server logic of its own, so Vercel's zero-config deploys are a good fit.
 
 ---
 
-## 🎨 Frontend Architecture & UX Design
+## How it's built
 
-### 1. Why Vite + React (SPA) over Next.js?
-For a dedicated REST API architecture powered by Fastify, a single-page application (SPA) built with Vite provides a cleaner separation of concerns than Next.js. It avoids redundant server routing layers, keeps client-side state predictable, and compiles to lightweight static assets easily deployable to edge CDNs.
+**Two tables, linked, kept in sync.** `shipments` holds the current state of each shipment — status, priority, origin, destination, expected delivery. `shipment_events` is an append-only log of every status change that's ever happened to it, with a timestamp and an optional note. Nothing in `shipment_events` is ever edited or deleted.
 
-### 2. Status Track Visualization & Exception Branching
-Logistics pipelines are rarely purely linear. Standard happy paths follow a progression (`Booked` -> `In Transit` -> `Delivered`), but exceptions like **`Customs Hold`** disrupt this flow.
+Every status update runs inside a single transaction: update the shipment, insert the new event, commit. If either half fails, the whole thing rolls back. That's what guarantees a shipment's current status can never drift out of sync with its own history.
 
-* **UI Centering & Overlap Defense:** Rather than forcing exception states into the linear horizontal track (which creates visual overlap and misaligns milestone nodes), exception states branch dynamically downward from the track.
-* **Visual Clarity:** The standard track retains its uniform spacing, while the exception node (`Customs Hold`) connects via a distinct dotted connector line. This makes operational bottlenecks instantly recognizable to dispatchers without distorting the overall timeline UI.
+**Reference numbers.** If you don't provide one when creating a shipment, the backend generates one from a Postgres sequence and formats it as `SHIP-00001`. At larger levels this might not work and we might need to shift to Random number Id's like SHIP-AX134 so it's difficult to guess how many orders we recieve in a day and prevent cyber attacks.
 
-### 3. Slide-Over Detail Panel & Update Drawer
-Selecting any shipment opens a slide-over modal drawer displaying the complete vertical history log and status update controls. Fetching detailed event history on-demand keeps the main shipment list API payload small and fast while delivering rich audit details when needed.
+**Status track and exceptions.** Most shipments move through a straight line: Booked → In Transit → Delivered. But real shipments sometimes hit something outside that line — Customs Hold, most notably. Rather than force that into the same horizontal track (which would either overlap nodes or misrepresent it as a normal stop), the UI branches it off as a separate node connected by a dotted line. The main track stays clean and evenly spaced, and an exception is visually obvious the moment it happens, without redesigning the whole timeline around it.
 
----
+**History on demand.** Clicking a shipment opens a side panel with its full event history and status-update controls, fetched only when you open it. The main list endpoint stays lightweight since it doesn't need to carry every shipment's full history just to render the board.
 
-## Deployment Strategy
-
-| Component | Target Platform | Rationale |
-| :--- | :--- | :--- |
-| **PostgreSQL Database** | Railway  | Automated database connection management, connection pooling support, persistent disk volumes. |
-| **Fastify API Server** | Railway | Containerized Node.js runtime, automatic SSL provisioning, integrated environment variable management. |
-| **React Frontend** | Vercel | Global CDN distribution, instant static previews, automatic edge routing. |
+**Input safety.** All database queries are parameterized (`$1`, `$2`, ...) rather than built from string concatenation, so user input is never interpreted as part of the SQL itself. Request bodies are validated against a schema before any of that code runs.
 
 ---
-## 💻 Local Development Setup
 
-### Prerequisites
-* Docker & Docker Compose
-* Node.js (v18+)
+## Running it locally
 
-### 1. Database Setup (Docker)
-```bash
-# Start PostgreSQL container on port 5433
-docker compose up -d
-```
+**You'll need:** Node 18+, and a PostgreSQL database (local or hosted).
 
-### 2. Backend Setup
+**1. Database** — create a database and run your schema against it. You need the `shipments` and `shipment_events` tables, and the `shipment_ref_seq` sequence used for auto-generated reference numbers.
+
+**2. Backend**
 ```bash
 cd backend
 npm install
-
-# Create .env file
-echo "PORT=3000
-DB_HOST=localhost
-DB_PORT=5433
-DB_USER=postgres
-DB_PASSWORD=postgrespassword
-DB_NAME=shipitnow" > .env
-
-# Run development server
+```
+Create a `.env` file:
+```
+DATABASE_URL=postgres://user:password@localhost:5432/shipitnow
+PORT=3000
+```
+```bash
 npm run dev
 ```
+Check it's up:
+```bash
+curl http://localhost:3000/shipments/health
+```
 
-### 3. Frontend Setup
+**3. Frontend**
 ```bash
 cd frontend
 npm install
-
-# Create .env file
-echo "VITE_API_BASE_URL=http://localhost:3000" > .env
-
-# Run Vite dev server
 npm run dev
 ```
+By default the frontend points at `http://localhost:3000/shipments` — change that in `api.js` if your backend runs somewhere else.
 
 ---
 
-## 📡 API Reference
+## Assumptions we made
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/shipments` | Create a new shipment (auto-generates `reference_number` if omitted). |
-| `GET` | `/shipments` | Fetch all shipments. Supports query params `?status=...&search=...`. |
-| `GET` | `/shipments/:id` | Fetch single shipment details alongside complete event history log. |
-| `PATCH` | `/shipments/:id/status` | Update shipment status and append an entry to the audit log. |
-| `GET` | `/health` | Health check endpoint for deployment monitoring. |
+- The main flow is linear (Booked → In Transit → Delivered); Customs Hold and Cancelled are exceptions that branch off it rather than ordinary stops on the line. A shipment can resume from Customs Hold, but Cancelled is treated as final.
+- `current_status` on the shipment row is a convenience for fast list rendering — the event log is the actual source of truth for a shipment's history.
+- Reference numbers are optional to provide, but never optional to have: every shipment gets one, generated automatically if you don't supply it.
+- Priority is a simple two-value field (Standard / Express), not a numeric scale.
+- Search is plain substring matching (`ILIKE`) across reference number, origin, destination, and notes — good enough at this scale, without the overhead of a real search engine.
+
+---
+
+## If this needed to support 10,000 shipments and multiple concurrent users
+
+- Search & Pagination: A full ILIKE scan without limits will crawl as the database grows. I'd add a trigram index for text search, an index on status, and paginate responses instead of fetching everything on every keystroke.
+
+- Concurrency Control: Right now, two people updating the same shipment at once will overwrite each other. Adding optimistic concurrency control with a version column cleanly catches those race conditions.
+
+- Real-time Updates: Polling burns server resources fast with multiple active users. Moving to WebSockets or Server-Sent Events (SSE) lets us push live updates directly to everyone watching the board.
+
+- Scale & Security: To handle heavy read traffic, I'd set up connection pooling and a read replica, then add basic auth with row-level security if we ever need multi-tenant data isolation.
