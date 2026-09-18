@@ -101,10 +101,10 @@ export default function TransitBoard() {
           <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16 }}>
             <div>
               <h1 style={{ fontSize: 30, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.5px", lineHeight: 1.2, margin: 0 }}>
-                Shipments
+                ShipItNow!
               </h1>
               <p style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: 6, marginBottom: 0 }}>
-                Every line is a shipment. Position on the track is its status.
+                Ship With Confidence.
               </p>
             </div>
             <button
