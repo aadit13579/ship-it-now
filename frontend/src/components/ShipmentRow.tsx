@@ -1,13 +1,14 @@
 import TrackLine from "./TrackLine";
+// @ts-ignore
 import { isException } from "../stages";
 
-function statusColor(status) {
+function statusColor(status: string) {
   if (isException(status)) return "var(--exception)";
   if (status === "Delivered") return "var(--delivered)";
   return "var(--line)";
 }
 
-export default function ShipmentRow({ shipment, onOpenHistory, onAdvance }) {
+export default function ShipmentRow({ shipment, onOpenHistory, onAdvance }: any) {
   const exception = isException(shipment.current_status);
   const color = statusColor(shipment.current_status);
   const eta = shipment.expected_delivery

@@ -3,6 +3,7 @@ import ShipmentRow from "./ShipmentRow.js";
 import SearchFilterBar from "./SearchFilterBar.js";
 import HistoryRail from "./HistoryRail.js";
 import CreateShipmentPanel from "./CreateShipmentPanel.js";
+// @ts-ignore
 import { fetchShipments, createShipment, updateShipmentStatus, fetchShipment } from "../api.js";
 
 export default function TransitBoard() {
@@ -36,7 +37,7 @@ export default function TransitBoard() {
     return () => clearTimeout(t);
   }, [load, search]);
 
-  async function handleAdvance(shipment, nextStatusValue) {
+  async function handleAdvance(shipment: any, nextStatusValue: any) {
     setShipments((prev) =>
       prev.map((s) => (s.id === shipment.id ? { ...s, current_status: nextStatusValue } : s))
     );
@@ -49,7 +50,7 @@ export default function TransitBoard() {
     }
   }
 
-  async function handleOpenHistory(shipment) {
+  async function handleOpenHistory(shipment: any) {
     setSelected(shipment);
     try {
       const full = await fetchShipment(shipment.id);
@@ -59,7 +60,7 @@ export default function TransitBoard() {
     }
   }
 
-  async function handleUpdateStatus(id, newStatus, note) {
+  async function handleUpdateStatus(id: any, newStatus: any, note: any) {
     try {
       await updateShipmentStatus(id, newStatus, note);
       load();
@@ -72,7 +73,7 @@ export default function TransitBoard() {
     }
   }
 
-  async function handleCreate(form) {
+  async function handleCreate(form: any) {
     setCreating(true);
     setCreateError(null);
     try {

@@ -10,14 +10,14 @@ const EMPTY = {
   delivery_notes: "",
 };
 
-export default function CreateShipmentPanel({ open, onClose, onSubmit, submitting, error }) {
+export default function CreateShipmentPanel({ open, onClose, onSubmit, submitting, error }: any) {
   const [form, setForm] = useState(EMPTY);
 
-  function update(field, value) {
+  function update(field: any, value: any) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: any) {
     e.preventDefault();
     const payload: any = { ...form };
     if (!payload.reference_number.trim()) delete payload.reference_number;
@@ -40,11 +40,11 @@ export default function CreateShipmentPanel({ open, onClose, onSubmit, submittin
   };
   const monoInput = { ...inputBase, fontFamily: "'IBM Plex Mono', monospace" };
 
-  const onFocus = (e) => {
+  const onFocus = (e: any) => {
     e.target.style.borderColor = "var(--line)";
     e.target.style.boxShadow = "0 0 0 3px var(--line-soft)";
   };
-  const onBlur = (e) => {
+  const onBlur = (e: any) => {
     e.target.style.borderColor = "var(--track)";
     e.target.style.boxShadow = "none";
   };

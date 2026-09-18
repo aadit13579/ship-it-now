@@ -1,3 +1,4 @@
+// @ts-ignore
 import { MAIN_STAGES, mainIndex, isException, nextStatus } from "../stages";
 
 const STEP = 138;
@@ -8,13 +9,13 @@ const VIEW_H = 92;
 // +30 right padding so the "Cancelled" label (rightmost station, ~27px half-width) doesn't clip
 const RIGHT_PAD = 30;
 
-function reachedColor(status, exception) {
+function reachedColor(status: string, exception: boolean) {
   if (exception) return "var(--exception)";
   if (status === "Delivered") return "var(--delivered)";
   return "var(--line)";
 }
 
-export default function TrackLine({ status, onAdvance, interactive = false }) {
+export default function TrackLine({ status, onAdvance, interactive = false }: { status: string, onAdvance: (stage: string) => void, interactive?: boolean }) {
   const currentIdx = mainIndex(status);
   const exception = isException(status);
   const upcoming = interactive ? nextStatus(status) : null;
@@ -22,7 +23,7 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
 
   const color = reachedColor(status, exception);
 
-  const stationX = (i) => START_X + i * STEP;
+  const stationX = (i: number) => START_X + i * STEP;
 
   return (
     <svg
@@ -83,7 +84,7 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
       )}
 
       {/* stations */}
-      {MAIN_STAGES.map((stage, i) => {
+      {MAIN_STAGES.map((stage: string, i: number) => {
         const reached = i <= currentIdx && !(exception && i === currentIdx);
         const isNext = interactive && stage === upcoming && !exception;
         return (

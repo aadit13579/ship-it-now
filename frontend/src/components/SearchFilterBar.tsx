@@ -1,6 +1,7 @@
+// @ts-ignore
 import { ALL_STATUSES } from "../stages";
 
-export default function SearchFilterBar({ search, onSearchChange, status, onStatusChange }) {
+export default function SearchFilterBar({ search, onSearchChange, status, onStatusChange }: any) {
   const inputStyle = {
     padding: "8px 12px",
     borderRadius: 8,
@@ -11,8 +12,8 @@ export default function SearchFilterBar({ search, onSearchChange, status, onStat
     outline: "none",
     transition: "border-color 0.15s, box-shadow 0.15s",
   };
-  const focus = (e) => { e.target.style.borderColor = "var(--line)"; e.target.style.boxShadow = "0 0 0 3px var(--line-soft)"; };
-  const blur  = (e) => { e.target.style.borderColor = "var(--track)"; e.target.style.boxShadow = "none"; };
+  const focus = (e: any) => { e.target.style.borderColor = "var(--line)"; e.target.style.boxShadow = "0 0 0 3px var(--line-soft)"; };
+  const blur  = (e: any) => { e.target.style.borderColor = "var(--track)"; e.target.style.boxShadow = "none"; };
 
   return (
     <div style={{
@@ -59,7 +60,7 @@ export default function SearchFilterBar({ search, onSearchChange, status, onStat
         onBlur={blur}
       >
         <option value="">All statuses</option>
-        {ALL_STATUSES.map((s) => (
+        {ALL_STATUSES.map((s: string) => (
           <option key={s} value={s}>{s}</option>
         ))}
       </select>

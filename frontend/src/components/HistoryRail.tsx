@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+// @ts-ignore
 import { isException, ALL_STATUSES } from "../stages";
 
-export default function HistoryRail({ shipment, onClose, onUpdate }) {
+export default function HistoryRail({ shipment, onClose, onUpdate }: any) {
   const open = !!shipment;
   const history = shipment?.history ?? [];
   const chronological = [...history].sort(
@@ -19,7 +20,7 @@ export default function HistoryRail({ shipment, onClose, onUpdate }) {
     }
   }, [shipment]);
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: any) {
     e.preventDefault();
     if (!onUpdate || !shipment) return;
     setUpdating(true);
@@ -153,7 +154,7 @@ export default function HistoryRail({ shipment, onClose, onUpdate }) {
                   borderRadius: 1,
                 }} />
 
-                {chronological.map((entry, i) => {
+                {chronological.map((entry: any, i: any) => {
                   const exception = isException(entry.status);
                   const color = exception
                     ? "var(--exception)"
@@ -232,7 +233,7 @@ export default function HistoryRail({ shipment, onClose, onUpdate }) {
                     outline: "none",
                   }}
                 >
-                  {ALL_STATUSES.map(s => (
+                  {ALL_STATUSES.map((s: string) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
