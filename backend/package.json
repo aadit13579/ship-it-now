@@ -9,6 +9,7 @@
   "dev": "tsx watch server.ts",
   "keywords": [],
   "author": "",
+  "start": "node dist/server.js",
   "license": "ISC",
   "description": "",
   "dependencies": {
