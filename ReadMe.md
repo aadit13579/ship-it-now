@@ -35,6 +35,17 @@ Every status update runs inside a single transaction: update the shipment, inser
 **Input safety.** All database queries are parameterized (`$1`, `$2`, ...) rather than built from string concatenation, so user input is never interpreted as part of the SQL itself. Request bodies are validated against a schema before any of that code runs.
 
 ---
+### Tools, References & Disclosures
+
+Frameworks & Libraries: Fastify, React, Vite, Tailwind CSS, PostgreSQL, pg-pool.
+
+Hosting Infrastructure: Render (Managed PostgreSQL & Fastify Web Service), Vercel (Frontend edge deployment).
+
+AI Collaboration: AI assistance was utilized as a development tool for code refactoring, TypeScript type definitions, and deployment/database connection troubleshooting.
+
+System Ownership: All system architecture decisions, SQL schema design, API endpoint logic, and end-to-end integration tests were designed, verified, and deployed manually.
+
+---
 
 ## Running it locally
 
