@@ -6,17 +6,17 @@ import CreateShipmentPanel from "./CreateShipmentPanel.js";
 import { fetchShipments, createShipment, updateShipmentStatus, fetchShipment } from "../api.js";
 
 export default function TransitBoard() {
-  const [shipments, setShipments] = useState([]);
+  const [shipments, setShipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
 
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<any | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -24,7 +24,7 @@ export default function TransitBoard() {
     try {
       const data = await fetchShipments({ search, status });
       setShipments(Array.isArray(data) ? data : data.shipments ?? []);
-    } catch (err) {
+    } catch (err:any) {
       setLoadError(err.message);
     } finally {
       setLoading(false);
@@ -43,7 +43,7 @@ export default function TransitBoard() {
     try {
       await updateShipmentStatus(shipment.id, nextStatusValue);
       load();
-    } catch (err) {
+    } catch (err:any) {
       setLoadError(`Couldn't update ${shipment.reference_number}: ${err.message}`);
       load();
     }
@@ -54,7 +54,7 @@ export default function TransitBoard() {
     try {
       const full = await fetchShipment(shipment.id);
       setSelected(full);
-    } catch (err) {
+    } catch (err:any) {
       setLoadError(`Couldn't load history: ${err.message}`);
     }
   }
@@ -67,7 +67,7 @@ export default function TransitBoard() {
         const full = await fetchShipment(id);
         setSelected(full);
       }
-    } catch (err) {
+    } catch (err:any) {
       setLoadError(`Couldn't update status: ${err.message}`);
     }
   }
@@ -80,7 +80,7 @@ export default function TransitBoard() {
       setCreateOpen(false);
       load();
       return true;
-    } catch (err) {
+    } catch (err:any) {
       setCreateError(err.message);
       return false;
     } finally {

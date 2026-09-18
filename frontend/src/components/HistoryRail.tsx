@@ -5,7 +5,7 @@ export default function HistoryRail({ shipment, onClose, onUpdate }) {
   const open = !!shipment;
   const history = shipment?.history ?? [];
   const chronological = [...history].sort(
-    (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    (a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
   const [status, setStatus] = useState("");
