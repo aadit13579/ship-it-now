@@ -48,3 +48,7 @@ CREATE INDEX idx_shipments_reference ON shipments (reference_number);
 CREATE INDEX idx_shipments_status ON shipments (current_status);
 
 CREATE INDEX idx_events_shipment_id ON shipment_events (shipment_id);
+
+CREATE SEQUENCE IF NOT EXISTS shipment_ref_seq START
+WITH
+    1 INCREMENT BY 1;
