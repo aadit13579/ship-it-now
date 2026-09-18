@@ -124,4 +124,13 @@ export default async function shipmentRoutes(fastify: FastifyInstance) {
       client.release();
     }
   });
+
+  fastify.get('/health', async (request, reply) => {
+    try {
+        await pool.query('SELECT 1');
+        reply.send({ status: 'ok', database: 'connected' });
+    } catch (err) {
+        reply.code(500).send({ status: 'error', database: 'disconnected' });
+    }
+    });
 }
