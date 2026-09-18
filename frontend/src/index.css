@@ -1,0 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* page vs. surface: the board sits as a lifted sheet on this background */
+  --paper: #e3e8df;
+  --panel: #fafcf8;
+
+  --ink: #10201a;
+  --ink-soft: #55655d;
+  --track: #c7d0c2;
+
+  /* primary accent - progress, interactive elements */
+  --line: #1b6e82;
+  --line-soft: #dfeced;
+
+  --delivered: #2e7d4f;
+  --delivered-soft: #e2efe5;
+
+  --exception: #c1650a;
+  --exception-soft: #f6e4d2;
+}
+
+body {
+  font-family: "IBM Plex Sans", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.btn-primary {
+  background: var(--line);
+  color: var(--panel);
+  transition: opacity 0.15s ease;
+}
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.track-dot-next:hover {
+  fill: var(--line-soft);
+}
