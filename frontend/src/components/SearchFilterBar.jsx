@@ -1,44 +1,68 @@
 import { ALL_STATUSES } from "../stages";
 
-export default function SearchFilterBar({ search, onSearchChange, status, onStatusChange, onCreate }) {
-  return (
-    <div className="flex items-center gap-6 px-10 py-7 border-b" style={{ borderColor: "var(--track)" }}>
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Search by reference number"
-        className="flex-1 max-w-xs bg-transparent border-b py-2 text-sm outline-none transition-colors"
-        style={{
-          borderColor: "var(--track)",
-          color: "var(--ink)",
-          font: "400 13px 'IBM Plex Mono', monospace",
-        }}
-        onFocus={(e) => (e.target.style.borderColor = "var(--line)")}
-        onBlur={(e) => (e.target.style.borderColor = "var(--track)")}
-      />
+export default function SearchFilterBar({ search, onSearchChange, status, onStatusChange }) {
+  const inputStyle = {
+    padding: "8px 12px",
+    borderRadius: 8,
+    border: "1.5px solid var(--track)",
+    background: "var(--paper)",
+    color: "var(--ink)",
+    fontSize: 14,
+    outline: "none",
+    transition: "border-color 0.15s, box-shadow 0.15s",
+  };
+  const focus = (e) => { e.target.style.borderColor = "var(--line)"; e.target.style.boxShadow = "0 0 0 3px var(--line-soft)"; };
+  const blur  = (e) => { e.target.style.borderColor = "var(--track)"; e.target.style.boxShadow = "none"; };
 
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "12px 14px",
+      borderRadius: 10,
+      background: "var(--panel)",
+      border: "1px solid var(--track)",
+      boxShadow: "var(--shadow-sm)",
+      marginBottom: 4,
+    }}>
+      <div style={{ position: "relative", flex: 1, maxWidth: 340 }}>
+        <svg
+          style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "var(--ink-muted)", pointerEvents: "none" }}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search shipments…"
+          style={{
+            ...inputStyle,
+            width: "100%",
+            paddingLeft: 32,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 13,
+          }}
+          onFocus={focus}
+          onBlur={blur}
+        />
+      </div>
+
+      {/* Status filter */}
       <select
         value={status}
         onChange={(e) => onStatusChange(e.target.value)}
-        className="bg-transparent border-b py-2 text-sm outline-none transition-colors"
-        style={{ borderColor: "var(--track)", color: "var(--ink)" }}
-        onFocus={(e) => (e.target.style.borderColor = "var(--line)")}
-        onBlur={(e) => (e.target.style.borderColor = "var(--track)")}
+        style={{ ...inputStyle, cursor: "pointer" }}
+        onFocus={focus}
+        onBlur={blur}
       >
         <option value="">All statuses</option>
         {ALL_STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
+          <option key={s} value={s}>{s}</option>
         ))}
       </select>
-
-      <div className="flex-1" />
-
-      <button onClick={onCreate} className="btn-primary text-sm font-medium px-6 py-3">
-        New shipment
-      </button>
     </div>
   );
 }

@@ -5,7 +5,10 @@ import shipmentRoutes from './src/routes/shipments.js';
 const fastify = Fastify({ logger: true });
 
 // Register Plugins and Middleware
-fastify.register(cors, { origin: '*' });
+fastify.register(cors, { 
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+});
 
 // Register Routes with a prefix
 fastify.register(shipmentRoutes, { prefix: '/shipments' });

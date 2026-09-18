@@ -36,7 +36,7 @@ export async function updateShipmentStatus(id, status, note = "") {
   const res = await fetch(`${BASE_URL}/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status, notes }),
+    body: JSON.stringify({ status, notes: note }),
   });
   return handle(res);
 }

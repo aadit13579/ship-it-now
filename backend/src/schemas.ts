@@ -3,7 +3,7 @@ export const createShipmentSchema = {
     type: 'object',
     required: ['origin', 'destination', 'weight', 'expected_delivery'],
     properties: {
-      reference_number: { type: 'string', minLength: 3 },
+      reference_number: { type: 'string' },
       origin: { type: 'string', minLength: 2 },
       destination: { type: 'string', minLength: 2 },
       weight: { type: 'number', minimum: 0.1 },

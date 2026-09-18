@@ -1,10 +1,12 @@
-import { MAIN_STAGES, EXCEPTION_STAGE, mainIndex, isException, nextStatus } from "../stages";
+import { MAIN_STAGES, mainIndex, isException, nextStatus } from "../stages";
 
 const STEP = 138;
 const START_X = 22;
 const Y = 40;
 const RADIUS = 7;
 const VIEW_H = 92;
+// +30 right padding so the "Cancelled" label (rightmost station, ~27px half-width) doesn't clip
+const RIGHT_PAD = 30;
 
 function reachedColor(status, exception) {
   if (exception) return "var(--exception)";
@@ -16,7 +18,8 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
   const currentIdx = mainIndex(status);
   const exception = isException(status);
   const upcoming = interactive ? nextStatus(status) : null;
-  const width = START_X * 2 + STEP * (MAIN_STAGES.length - 1);
+  const width = START_X * 2 + STEP * (MAIN_STAGES.length - 1) + RIGHT_PAD;
+
   const color = reachedColor(status, exception);
 
   const stationX = (i) => START_X + i * STEP;
@@ -74,7 +77,7 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
             textAnchor="middle"
             style={{ font: "600 11px 'IBM Plex Mono', monospace", fill: "var(--exception)" }}
           >
-            {EXCEPTION_STAGE}
+            {status}
           </text>
         </>
       )}
@@ -124,9 +127,9 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
       })}
 
       {/* exception resume target */}
-      {exception && interactive && (
+      {exception && interactive && nextStatus(status) && (
         <circle
-          cx={stationX(mainIndex("Out for Delivery"))}
+          cx={stationX(mainIndex(nextStatus(status)))}
           cy={Y}
           r={RADIUS + 5}
           fill="none"
@@ -134,7 +137,7 @@ export default function TrackLine({ status, onAdvance, interactive = false }) {
           strokeWidth="1.5"
           strokeDasharray="2 2"
           className="cursor-pointer"
-          onClick={() => onAdvance("Out for Delivery")}
+          onClick={() => onAdvance(nextStatus(status))}
         />
       )}
     </svg>

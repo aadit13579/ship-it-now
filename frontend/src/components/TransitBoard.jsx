@@ -32,12 +32,11 @@ export default function TransitBoard() {
   }, [search, status]);
 
   useEffect(() => {
-    const t = setTimeout(load, search ? 250 : 0); // debounce typed search only
+    const t = setTimeout(load, search ? 250 : 0);
     return () => clearTimeout(t);
   }, [load, search]);
 
   async function handleAdvance(shipment, nextStatusValue) {
-    // Optimistic update so the board feels immediate.
     setShipments((prev) =>
       prev.map((s) => (s.id === shipment.id ? { ...s, current_status: nextStatusValue } : s))
     );
@@ -51,12 +50,25 @@ export default function TransitBoard() {
   }
 
   async function handleOpenHistory(shipment) {
-    setSelected(shipment); // show the panel immediately with what we have
+    setSelected(shipment);
     try {
       const full = await fetchShipment(shipment.id);
       setSelected(full);
     } catch (err) {
       setLoadError(`Couldn't load history: ${err.message}`);
+    }
+  }
+
+  async function handleUpdateStatus(id, newStatus, note) {
+    try {
+      await updateShipmentStatus(id, newStatus, note);
+      load();
+      if (selected && selected.id === id) {
+        const full = await fetchShipment(id);
+        setSelected(full);
+      }
+    } catch (err) {
+      setLoadError(`Couldn't update status: ${err.message}`);
     }
   }
 
@@ -77,72 +89,95 @@ export default function TransitBoard() {
   }
 
   return (
-    <div className="min-h-screen p-8" style={{ background: "var(--paper)" }}>
-      <div
-        className="flex mx-auto border"
-        style={{
-          height: "calc(100vh - 4rem)",
-          maxWidth: 1400,
-          background: "var(--panel)",
-          borderColor: "var(--track)",
-        }}
-      >
-        <HistoryRail shipment={selected} onClose={() => setSelected(null)} />
+    // Overlay container — panels slide in OVER the content, never squish it
+    <div className="h-screen overflow-hidden relative" style={{ background: "var(--paper)" }}>
 
-        <div className="flex-1 min-w-0 overflow-y-auto">
-          <header className="px-10 pt-12 pb-8">
-            <h1 style={{ font: "600 28px 'IBM Plex Sans', sans-serif", color: "var(--ink)" }}>
-              Shipments
-            </h1>
-            <p className="text-sm mt-2" style={{ color: "var(--ink-soft)" }}>
-              Every line is a shipment. Position on the track is its status.
-            </p>
+      {/* ── Main scrollable area ── always full-width ── */}
+      <div className="h-full overflow-y-auto">
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "40px 32px 60px" }}>
+
+          {/* Header */}
+          <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16 }}>
+            <div>
+              <h1 style={{ fontSize: 30, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.5px", lineHeight: 1.2, margin: 0 }}>
+                Shipments
+              </h1>
+              <p style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: 6, marginBottom: 0 }}>
+                Every line is a shipment. Position on the track is its status.
+              </p>
+            </div>
+            <button
+              onClick={() => { setCreateError(null); setCreateOpen(true); }}
+              className="btn-primary"
+              style={{ fontSize: 14, fontWeight: 600, padding: "10px 20px", whiteSpace: "nowrap", flexShrink: 0 }}
+            >
+              + New shipment
+            </button>
           </header>
 
+          {/* Search / filter */}
           <SearchFilterBar
             search={search}
             onSearchChange={setSearch}
             status={status}
             onStatusChange={setStatus}
-            onCreate={() => setCreateOpen(true)}
           />
 
+          {/* Error banner */}
           {loadError && (
-            <div className="px-10 py-4 text-sm" style={{ color: "var(--exception)" }}>
+            <div style={{
+              marginTop: 12,
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontSize: 14,
+              background: "var(--exception-soft)",
+              color: "var(--exception)",
+              border: "1px solid #fde68a",
+            }}>
               {loadError}
             </div>
           )}
 
-          {loading ? (
-            <div className="px-10 py-20 text-sm text-center" style={{ color: "var(--ink-soft)" }}>
-              Loading shipments…
-            </div>
-          ) : shipments.length === 0 ? (
-            <div className="px-10 py-20 text-sm text-center" style={{ color: "var(--ink-soft)" }}>
-              No shipments match. Try a different search, or create one.
-            </div>
-          ) : (
-            <div>
-              {shipments.map((s) => (
+          {/* Shipment list card */}
+          <div style={{
+            marginTop: 16,
+            borderRadius: 12,
+            overflow: "hidden",
+            background: "var(--panel)",
+            boxShadow: "var(--shadow-sm)",
+            border: "1px solid var(--track)",
+          }}>
+            {loading ? (
+              <div style={{ padding: "80px 0", textAlign: "center", fontSize: 14, color: "var(--ink-muted)" }}>
+                Loading shipments…
+              </div>
+            ) : shipments.length === 0 ? (
+              <div style={{ padding: "80px 0", textAlign: "center", fontSize: 14, color: "var(--ink-muted)" }}>
+                No shipments match. Try a different search, or create one.
+              </div>
+            ) : (
+              shipments.map((s) => (
                 <ShipmentRow
                   key={s.id}
                   shipment={s}
                   onOpenHistory={handleOpenHistory}
                   onAdvance={handleAdvance}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
-
-        <CreateShipmentPanel
-          open={createOpen}
-          onClose={() => setCreateOpen(false)}
-          onSubmit={handleCreate}
-          submitting={creating}
-          error={createError}
-        />
       </div>
+
+      {/* ── Overlay panels — slide in from edges, never squish the main content ── */}
+      <HistoryRail shipment={selected} onClose={() => setSelected(null)} onUpdate={handleUpdateStatus} />
+      <CreateShipmentPanel
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSubmit={handleCreate}
+        submitting={creating}
+        error={createError}
+      />
     </div>
   );
-}
+}
