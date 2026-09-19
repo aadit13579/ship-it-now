@@ -3,8 +3,8 @@
 A shipment tracking dashboard: create shipments, move them through a status pipeline, search and filter the list, and see the full history behind every status change.
 
 **Live app:** https://frontend-32viupzuv-aadit13579s-projects.vercel.app/
-
-**Stack:** Fastify + PostgreSQL (backend, hosted on Railway) · React + Vite + Tailwind (frontend, hosted on Vercel)
+**Live API Server** : https://ship-it-now.onrender.com/shipments
+**Stack:** Fastify + PostgreSQL (backend, hosted on Render) · React + Vite + Tailwind (frontend, hosted on Vercel)
 
 ---
 
@@ -16,7 +16,7 @@ A shipment tracking dashboard: create shipments, move them through a status pipe
 
 **PostgreSQL for the database.** The data is genuinely relational: every shipment has a growing list of status-change events tied to it, and the two need to stay in sync. Postgres also gave us a couple of things for free, a `SEQUENCE` for generating clean, collision-free reference numbers, and `ILIKE` for simple search — without needing extra infrastructure.
 
-**Railway + Vercel for hosting.** The backend and database sit together on Railway so queries stay on a fast internal network instead of crossing the public internet. The frontend is a static build with no server logic of its own, so Vercel's zero-config deploys are a good fit.
+**Render + Vercel for hosting.** The backend and database sit together on Render so queries stay on a fast internal network instead of crossing the public internet. The frontend is a static build with no server logic of its own, so Vercel's zero-config deploys are a good fit.
 
 ---
 
